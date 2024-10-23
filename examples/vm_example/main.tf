@@ -61,6 +61,35 @@ EOF
   }
 }
 
+resource "proxmox_virtual_environment_file" "cloudinit_network_config" {
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = local.node_name
+
+  source_raw {
+    file_name = "${local.hostname}-network-config.yaml"
+    data      = <<EOF
+network:
+  version: 2
+  ethernets:
+    # eth0:
+    #   dhcp4: true
+    eth0:
+      dhcp4: no
+      addresses:
+       - 10.1.2.30/24
+      nameservers:
+        addresses: [10.1.2.100]
+      routes:
+        - to: 0.0.0.0/0
+          via: 10.1.2.100
+          metric: 100
+
+EOF
+  }
+}
+
+
 
 ########################################
 ## Virtual Machine
@@ -77,7 +106,7 @@ module "vm_example" {
     agent        = true
     description  = "test vm"
     name         = local.hostname
-    pool_id      = "temp"
+    # pool_id      = "temp"
     tags         = ["test", "linux", "cloudinit"]
     # vm_id = 999
   }
@@ -94,10 +123,32 @@ module "vm_example" {
     meta_config_file   = proxmox_virtual_environment_file.cloudinit_meta_config.id
     user_config_file   = proxmox_virtual_environment_file.cloudinit_user_config.id
     vendor_config_file = proxmox_virtual_environment_file.cloudinit_vendor_config.id
+    # network_config_file = proxmox_virtual_environment_file.cloudinit_network_config.id
+
+    ## Configuration via object below will produce cloud-init Networking Config Version 1
+    ## If Networking Config Version 2 is required - use network_config_file instead
     ipv4 = {
-      address = "dhcp" # CIDR or "dhcp"
-      #gateway = "" # not needed when "dhcp"
+      address = "dhcp" 
     }
+
+    # ipv4 = {
+    #   address = "dhcp" 
+    #   nameservers = ["1.1.1.1","8.8.8.8"] # overrides whatever set via dhcp
+    #   domain = "localdomain"              # overrides whatever set via dhcp
+    # }
+
+    # ipv4 = {
+    #   address = "10.1.2.31/24"
+    #   gateway = "10.1.2.100" 
+    # }
+
+    # ipv4 = {
+    #   address = "10.1.2.31/24" 
+    #   gateway = "10.1.2.100" 
+    #   nameservers = ["1.1.1.1","8.8.8.8"]
+    #   domain = "localdomain"
+    # }
+
   }
 }
 

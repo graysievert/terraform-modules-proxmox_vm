@@ -70,15 +70,28 @@ VM cloud-init config:
   meta_config_file: (optional) Cloud-init user config 
   user_config_file: (optional) Cloud-init vendor config 
   vendor_config_file: (optional) Cloud-init meta config
-  ipv4: (optional) ip v4 configuration object
+  network_config_file: (optional) Cloud-init meta config (overrides `ipv4`)
+  ipv4: (optional) ip v4 cloud-init network configuration object. 
+      address: CIDR or "dhcp"
+      gateway: (optional) IP address, must be omitted when "dhcp" is used
+      namesevers: (optional) list of IP addresses (e.g. ["1.1.1.1", "8.8.8.8"]),
+                  if not set proxmox default is used
+      domain: (optional) search domain (e.g. "lan"), 
+              if not set proxmox default is used
+  [NOTE] If set, ipv4 object will produce cloud-init Networking Config Version 1. 
+         If Networking Config Version 2 (or/and complex configuration) is required,
+         then use `network_config_file` instead
 EOF
   type = object({
-    meta_config_file   = optional(string)
-    user_config_file   = optional(string)
-    vendor_config_file = optional(string)
+    meta_config_file     = optional(string)
+    user_config_file     = optional(string)
+    vendor_config_file   = optional(string)
+    network_config_file  = optional(string)
     ipv4 = optional(object({
-      address = string           # (e.g. 192.168.2.2/24)
-      gateway = optional(string) # must be omitted when dhcp is used as the address
+      address = string             # (e.g. "192.168.2.2/24" or "dhcp")
+      gateway = optional(string)   # must be omitted when dhcp is used as the address
+      nameservers = optional(list(string)) # (e.g. ["1.1.1.1", "8.8.8.8"])
+      domain = optional(string)    # search domain(e.g. "lan")
     }))
   })
 
@@ -89,6 +102,8 @@ EOF
     ipv4 = {
       address = "dhcp"
       gateway = null
+      nameservers = null
+      domain = null
     }
   }
 }

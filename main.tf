@@ -27,13 +27,20 @@ resource "proxmox_virtual_environment_vm" "vm" {
   initialization {
     datastore_id = local.metadata.datastore_id
 
-    ## User config
+    ## User config yaml
     user_data_file_id = local.cloudinit.user_config_file
-    ## Vendor config
+    ## Vendor config yaml
     vendor_data_file_id = local.cloudinit.vendor_config_file
-    ## Metadata config
+    ## Metadata config yaml
     meta_data_file_id = local.cloudinit.meta_config_file
-    ## Network config
+    ## Network config yaml (overrides parameter-way configuration if such is present)
+    network_data_file_id = local.cloudinit.network_config_file
+    
+    ## Network config as parameters (wil be overwritten by yaml network config if such is present) 
+    dns {
+      servers = local.cloudinit.ipv4 != null ? local.cloudinit.ipv4.nameservers : null
+      domain  = local.cloudinit.ipv4 != null ? local.cloudinit.ipv4.domain : null
+    }
     ip_config {
       ipv4 {
         address = local.cloudinit.ipv4 != null ? local.cloudinit.ipv4.address : "dhcp"
