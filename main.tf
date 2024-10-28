@@ -119,13 +119,13 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   lifecycle {
     ignore_changes = [
-      # vm_id,
-      # id,
-      # name,
-      # tags,
-      # cpu,
-      # template,
-      # initialization
+      vm_id,
+      id,
+      name,
+      tags,
+      cpu,
+      template,
+      initialization
     ]
   }
 
