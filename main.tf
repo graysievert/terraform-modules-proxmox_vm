@@ -76,7 +76,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   cpu {
-    architecture = "x86_64"
+    # architecture = "x86_64" # one needs to use root@pam account to use this. See more at https://github.com/bpg/terraform-provider-proxmox/pull/1683
     type         = "host"
     hotplugged   = 0
     limit        = 0
